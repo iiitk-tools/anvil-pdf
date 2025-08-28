@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/iiitk-tools/anvil-pdf/internal/config"
+	"github.com/iiitk-tools/anvil-pdf/internal/http/routes"
 	mw "github.com/iiitk-tools/anvil-pdf/internal/middlewares"
 )
 
@@ -22,6 +23,12 @@ func main() {
 
 	// http mux constructor
 	mainMux := http.NewServeMux()
+
+	// api mux constructor
+	apiMux := http.NewServeMux()
+	mainMux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiMux))
+
+	apiMux.Handle("/pdf/", http.StripPrefix("/pdf", routes.NewPDF()))
 
 	// default endpoint - {$} makes it very specific
 	mainMux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
