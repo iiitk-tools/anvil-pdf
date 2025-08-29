@@ -19,6 +19,10 @@ func ConvertImagesToPDF(imgs []io.Reader, orientation string) (*bytes.Buffer, er
 		importConfig = config.PortraitConfig
 	case "landscape":
 		importConfig = config.LandscapeConfig
+	case "landscape-fit":
+		importConfig = config.LandscapeConfigFit
+	case "portrait-fit":
+		importConfig = config.PortraitConfigFit
 	default:
 		importConfig = config.DefaultConfig
 	}

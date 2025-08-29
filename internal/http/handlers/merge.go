@@ -1,9 +1,11 @@
 package handlers
 
 import (
-	"io"
+	"bytes"
 	"net/http"
-	"os"
+
+	pdffunc "github.com/iiitk-tools/anvil-pdf/internal/pdf_func"
+	"github.com/iiitk-tools/anvil-pdf/internal/utils"
 )
 
 // MergeJPEGToPDFHandler handles merging uploaded JPEG images into a PDF
@@ -14,36 +16,33 @@ func MergeJPEGToPDFHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse multipart form (max 50 MB for uploads)
-	err := r.ParseMultipartForm(50 << 20)
+	orientation, fileReader, err := utils.GetReadersFromUpload(r)
 	if err != nil {
-		http.Error(w, "Error parsing form: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Error reading Images : "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Retrieve files
-	files := r.MultipartForm.File["files"]
-	if len(files) == 0 {
-		http.Error(w, "No files uploaded", http.StatusBadRequest)
+	var pdfBuf *bytes.Buffer
+
+	pdfBuf, err = pdffunc.ConvertImagesToPDF(fileReader,orientation)
+	if err != nil {
+		http.Error(w, "Error converting images to PDF: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// ADD BUSINESS LOGIC HERE
-	// return outputPath 
-	outputPath := "dummypath"
+
+	if pdfBuf == nil {
+		http.Error(w, "Error generating PDF", http.StatusInternalServerError)
+		return
+	}
 
 	// Serve the PDF as a download
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "attachment; filename=merged.pdf")
+	w.Header().Set("Content-Length", string(len(pdfBuf.Bytes())))
 
-	outputFile, err := os.Open(outputPath)
-	if err != nil {
-		http.Error(w, "Error opening PDF: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer outputFile.Close()
-
-	_, err = io.Copy(w, outputFile)
+	// Write directly from buffer to response
+	_, err = w.Write(pdfBuf.Bytes())
 	if err != nil {
 		http.Error(w, "Error sending PDF: "+err.Error(), http.StatusInternalServerError)
 		return
