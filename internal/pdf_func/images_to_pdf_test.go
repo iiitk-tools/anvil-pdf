@@ -10,13 +10,13 @@ import (
 
 func TestConvertImagesToPDF(t *testing.T) {
 	// Open two sample image files (ensure both exist in the tmp directory)
-	imgFile1, err := os.Open("/Users/vijayvenkatj/Projects/anvil/anvil-pdf/tmp/sample.png")
+	imgFile1, err := os.Open("sample-dir/image")
 	if err != nil {
 		t.Fatalf("failed to open first test image: %v", err)
 	}
 	defer imgFile1.Close()
 
-	imgFile2, err := os.Open("/Users/vijayvenkatj/Projects/anvil/anvil-pdf/tmp/sample2.png")
+	imgFile2, err := os.Open("sample-dir/image")
 	if err != nil {
 		t.Fatalf("failed to open second test image: %v", err)
 	}
@@ -33,5 +33,5 @@ func TestConvertImagesToPDF(t *testing.T) {
 	}
 
 	// Optionally, write the PDF to disk for manual inspection
-	os.WriteFile("/Users/vijayvenkatj/Projects/anvil/anvil-pdf/tmp/out.pdf", pdfBuff.Bytes(), 0644)
+	os.WriteFile("tmp/out.pdf", pdfBuff.Bytes(), 0644)
 }
